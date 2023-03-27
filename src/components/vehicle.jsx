@@ -1,20 +1,26 @@
 import React, { useEffect, useState } from 'react'
 import "../components/vehicle.css"
 import axios from 'axios'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 function Vehicle() {
 
+    const navigate = useNavigate()
     const [search, setSearch] = useState("")
     const [list, setList] = useState([])
-    const [filter, setFilter] = useState()
+    const [filter, setFilter] = useState("")
     useEffect(()=>{
         getData()
+        // handleClick()
     },[])
     const getData = async(e)=>{
         const res = await axios.get("https://vpic.nhtsa.dot.gov/api/vehicles/getallmanufacturers?format=json&page=2")
         console.log(res.data.Results);
         setList(res.data.Results);
+    }
+
+    const handleClick = ()=>{
+        navigate("/details")
     }
   return (
     <div>
@@ -36,14 +42,14 @@ function Vehicle() {
                             
                             <option value="all">All</option>
                             <option value="passenger car">Passenger Car</option>
-                            <option value="truck">Truck</option>
-                            <option value="passenger car">Multipurpose Passenger Vehicle (MPV)</option>
+                            <option value="Truck">Truck</option>
+                            <option value="Multipurpose Passenger Vehicle (MPV)">Multipurpose Passenger Vehicle (MPV)</option>
                             <option value="motor cycle">Motor Cycle</option>
-                            <option value="motor cycle">Trailor</option>
-                            <option value="motor cycle">Low Speed Vehicle (LSV)</option>
-                            <option value="motor cycle">Off Road Vehicle</option>
-                            <option value="motor cycle">Bus</option>
-                            <option value="motor cycle">Incomplete Vehicle</option>
+                            <option value="trailer">Trailer</option>
+                            <option value="lsv">Low Speed Vehicle (LSV)</option>
+                            <option value="off road">Off Road Vehicle</option>
+                            <option value="bus">Bus</option>
+                            <option value="incomplete vehicle">Incomplete Vehicle</option>
                         </select>
                     </form>
                 </div>
@@ -65,17 +71,23 @@ function Vehicle() {
                             <td>Truck</td>
                         </tr> */}
                         {list.filter((item)=>{
+                            if (filter === "") {
+                                return true;
+                            } else {
+                                return item.VehicleTypes.some((type)=> {
+                                    return type.Name.toLowerCase() === filter.toLowerCase();
+                                })
+                            }
+                        }).filter((item)=>{
                             return search.toLowerCase() === ""
                             ? item
                             : item.Mfr_Name.toLowerCase().includes(search)
                         }).map((item,id)=>{
                             return(
-                                    <tr key={id}>
-                                        <Link to="/details">
+                                    <tr onClick={handleClick} key={id}>
                                         <td>{item.Mfr_CommonName}</td>
-                                        </Link>
                                         <td>{item.Country}</td>
-                                        <td>{item.VehicleTypes.Name}</td>
+                                        <td>{item.VehicleTypes.length > 0 ? item.VehicleTypes[0].Name : ""}</td>
                                     </tr>
                             )
                         })}
